@@ -67,8 +67,14 @@ public class JwtService {
         /*
         Aqui recibe el token y email para poder validarlos
          */
-          return extractEmail(email).equals(email) && !isTokenExpired(token);
-    }
+        try{
+          return extractEmail(token).equals(email) && !isTokenExpired(token);
+          } catch (Exception e) {
+            return false;
+        }
+
+
+        }
 
     private boolean isTokenExpired(String token){
         return  Jwts.parserBuilder()

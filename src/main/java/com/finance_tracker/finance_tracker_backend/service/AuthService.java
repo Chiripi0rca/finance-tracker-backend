@@ -12,6 +12,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -27,6 +29,7 @@ public class AuthService {
         UserEntity entity = new UserEntity(); //aqui creamos un UserEntity para guardar los datos del usuario
         entity.setPassword(passwordEncoder.encode(requestDTO.getPassword()));//aqui encriptamos la password con
         entity.setEmail(requestDTO.getEmail());
+        entity.setRol(Set.of("ROLE_USER"));
         UserEntity userSave = userRepository.save(entity);//aqui aguardamos la entity en la DB
         AuthResponseDTO responseDTO = new AuthResponseDTO();//aqui creamos el response
         responseDTO.setEmail(userSave.getEmail());

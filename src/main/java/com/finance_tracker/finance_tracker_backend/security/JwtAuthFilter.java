@@ -45,6 +45,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String token = autherHeader.substring(7);
         String email = jwtService.extractEmail(token);
 
+
         if (jwtService.isTokenValid(token, email)){
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);//aqui cargamos los datos del usuario desde la DB
 

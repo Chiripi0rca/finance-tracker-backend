@@ -1,0 +1,107 @@
+package com.finance_tracker.finance_tracker_backend.service;
+
+import com.finance_tracker.finance_tracker_backend.dto.CreateTransactionDTO;
+import com.finance_tracker.finance_tracker_backend.dto.TransactionResponseDTO;
+import com.finance_tracker.finance_tracker_backend.dto.UpdateTransactionDTO;
+import com.finance_tracker.finance_tracker_backend.entity.TransactionEntity;
+import com.finance_tracker.finance_tracker_backend.entity.UserEntity;
+import com.finance_tracker.finance_tracker_backend.exception.ResourceNotFoundException;
+import com.finance_tracker.finance_tracker_backend.repository.TransactionRepository;
+import com.finance_tracker.finance_tracker_backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.*;
+
+
+@Service
+@RequiredArgsConstructor
+public class TransactionService {
+    private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
+
+
+    public TransactionResponseDTO crear(CreateTransactionDTO createTransactionDTO){
+        UserEntity user = userRepository.findByEmail(getUser())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        TransactionEntity entity = new TransactionEntity();
+        entity.setCreatedAt(LocalDateTime.now());
+        entity.setMonto(createTransactionDTO.getMonto());
+        entity.setCategoria(createTransactionDTO.getCategoria());
+        entity.setDescripcion(createTransactionDTO.getDescripcion());
+        entity.setTipoTransaccion(createTransactionDTO.getTipoTransaccion());
+        entity.setUser(user);
+        TransactionEntity transactionSave = transactionRepository.save(entity);
+
+        return convertirAResponseDto(transactionSave);
+    }
+
+    public TransactionResponseDTO actualizar(UpdateTransactionDTO updateDTO, Long id){
+
+        Optional<TransactionEntity> optional = transactionRepository.findById(id);
+        if(optional.isEmpty()){
+            throw new ResourceNotFoundException("Movimiento no encontrado");
+        }
+        TransactionEntity entity = optional.get();
+
+        if (updateDTO.getTipoTransaccion() != null){
+            entity.setTipoTransaccion(updateDTO.getTipoTransaccion());
+        }
+        if (updateDTO.getCategoria() != null){
+            entity.setCategoria(updateDTO.getCategoria());
+        }
+        if (updateDTO.getMonto() != null){
+            entity.setMonto(updateDTO.getMonto());
+        }
+        if (updateDTO.getDescripcion() != null){
+            entity.setDescripcion(updateDTO.getDescripcion());
+        }
+
+        entity.setUpdatedAt(LocalDateTime.now());
+
+        TransactionEntity update = transactionRepository.save(entity);
+        return convertirAResponseDto(update);
+    }
+    public TransactionResponseDTO obtenerPorID(Long id){
+        Optional<TransactionEntity> optional = transactionRepository.findById(id);
+        TransactionEntity entity = optional.orElse(null);
+        if(entity == null){
+            throw new ResourceNotFoundException("Tarea no encontrada");
+        }
+        return convertirAResponseDto(entity);
+    }
+
+    public List<TransactionResponseDTO> listarMovimientos(){
+        UserEntity user = userRepository.findByEmail(getUser())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        List<TransactionEntity> entities = transactionRepository.findByUser(user);
+        List<TransactionResponseDTO> responseDTOList = new ArrayList<>();
+
+        for (TransactionEntity entity : entities){
+            responseDTOList.add(convertirAResponseDto(entity));
+        }
+        return responseDTOList;
+    }
+
+    public TransactionResponseDTO convertirAResponseDto(TransactionEntity entity){
+        TransactionResponseDTO responseDTO = new TransactionResponseDTO();
+        responseDTO.setCreatedAt(entity.getCreatedAt());
+        responseDTO.setUpdatedAt(entity.getUpdatedAt());
+        responseDTO.setCategoria(entity.getCategoria());
+        responseDTO.setMonto(entity.getMonto());
+        responseDTO.setId(entity.getId());
+        responseDTO.setDescripcion(entity.getDescripcion());
+        responseDTO.setTipoTransaccion(entity.getTipoTransaccion());
+        return responseDTO;
+
+    }
+
+    public String getUser(){
+        return Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getName();
+    }
+}

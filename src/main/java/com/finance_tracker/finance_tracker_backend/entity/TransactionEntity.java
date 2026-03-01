@@ -18,6 +18,9 @@ public class TransactionEntity {
     @Column (name = "createdAt")
     private LocalDateTime createdAt;
 
+    @Column (name = "updatedAt")
+    private LocalDateTime updatedAt;
+
     @Column (name = "monto")
     private BigDecimal monto;
 
