@@ -1,6 +1,7 @@
 package com.finance_tracker.finance_tracker_backend.controller;
 
 import com.finance_tracker.finance_tracker_backend.dto.CreateTransactionDTO;
+import com.finance_tracker.finance_tracker_backend.dto.DashboardDTO;
 import com.finance_tracker.finance_tracker_backend.dto.TransactionResponseDTO;
 import com.finance_tracker.finance_tracker_backend.dto.UpdateTransactionDTO;
 import com.finance_tracker.finance_tracker_backend.service.TransactionService;
@@ -27,6 +28,11 @@ public class TransactionController {
        @GetMapping("/{id}")
        public List<TransactionResponseDTO> obtnerPorId(@PathVariable Long id){
            return Collections.singletonList(transactionService.obtenerPorID(id));
+       }
+
+       @GetMapping("/dashboard")
+       public ResponseEntity<DashboardDTO> getDashboard(){
+           return ResponseEntity.ok(transactionService.getDashboard());
        }
 
        @PostMapping
