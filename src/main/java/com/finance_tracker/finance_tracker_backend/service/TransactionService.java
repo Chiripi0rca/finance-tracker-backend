@@ -77,9 +77,13 @@ public class TransactionService {
         Optional<TransactionEntity> optional = transactionRepository.findById(id);
         TransactionEntity entity = optional.orElse(null);
         if(entity == null){
-            throw new ResourceNotFoundException("Tarea no encontrada");
+            throw new ResourceNotFoundException("Movimiento no encontrada");
         }
         return convertirAResponseDto(entity);
+    }
+
+    public void delete(Long id){
+        transactionRepository.deleteById(id);
     }
 
     public List<TransactionResponseDTO> listarMovimientos(){

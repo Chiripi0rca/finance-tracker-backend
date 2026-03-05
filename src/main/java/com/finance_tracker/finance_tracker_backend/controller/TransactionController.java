@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/api/transaction")
 @RequiredArgsConstructor
@@ -43,6 +44,11 @@ public class TransactionController {
        @PutMapping("/{id}")
     public ResponseEntity<TransactionResponseDTO> actualizar(@RequestBody @Valid UpdateTransactionDTO updateDTO, @PathVariable Long id){
            return ResponseEntity.ok(transactionService.actualizar(updateDTO,id));
+       }
+
+       @DeleteMapping("/{id}")
+        public void delete(@PathVariable Long id){
+           transactionService.delete(id);
        }
 
 
