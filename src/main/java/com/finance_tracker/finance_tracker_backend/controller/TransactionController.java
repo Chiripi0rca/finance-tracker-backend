@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 
 
@@ -26,9 +25,9 @@ public class TransactionController {
            return transactionService.listarMovimientos();
        }
 
-       @GetMapping("/{id}")
-       public List<TransactionResponseDTO> obtnerPorId(@PathVariable Long id){
-           return Collections.singletonList(transactionService.obtenerPorID(id));
+       @GetMapping("/{user_id}")
+       public List<TransactionResponseDTO> obtnerPorId(@PathVariable Long user_id){
+           return transactionService.obtenerPorID(user_id);
        }
 
        @GetMapping("/dashboard")

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -73,13 +74,15 @@ public class TransactionService {
         TransactionEntity update = transactionRepository.save(entity);
         return convertirAResponseDto(update);
     }
-    public TransactionResponseDTO obtenerPorID(Long id){
-        Optional<TransactionEntity> optional = transactionRepository.findById(id);
-        TransactionEntity entity = optional.orElse(null);
-        if(entity == null){
-            throw new ResourceNotFoundException("Movimiento no encontrada");
+    public List<TransactionResponseDTO> obtenerPorID(Long userId){
+        List<TransactionEntity> entities = transactionRepository.findByUserId(userId);
+        List<TransactionResponseDTO> responseDTOList = new ArrayList<>();
+
+        for (TransactionEntity entity : entities){
+            responseDTOList.add(convertirAResponseDto(entity));
         }
-        return convertirAResponseDto(entity);
+
+        return responseDTOList;
     }
 
     public void delete(Long id){
@@ -99,7 +102,7 @@ public class TransactionService {
         return responseDTOList;
     }
 
-    @Cacheable("dashboard")
+    @Cacheable(value = "dashboard", key = "#root.target.getUser()")
     public DashboardDTO getDashboard(){
         UserEntity user = userRepository.findByEmail(getUser())
                 .orElseThrow(()-> new RuntimeException("Usuario no encontrado"));
