@@ -1,18 +1,20 @@
 # Finance Tracker — Backend
-> API REST para gestión de finanzas personales con autenticación JWT y despliegue en AWS.
+> API REST para gestión de finanzas personales con autenticación JWT, caché con Redis en el dashboard y despliegue en AWS.
 
 ---
 
 ## 🇲🇽 Español
 
 ### Descripción
-API REST desarrollada con Spring Boot que permite a los usuarios registrar y gestionar sus movimientos financieros (ingresos y egresos). Implementa autenticación segura con JWT, arquitectura en capas (Controller / Service / Repository) y está desplegada en AWS EC2 con base de datos en RDS PostgreSQL. El frontend está construido con Angular y Angular Material.
+API REST desarrollada con Spring Boot que permite a los usuarios registrar y gestionar sus movimientos financieros (ingresos y egresos). Implementa autenticación segura con JWT, arquitectura en capas (Controller / Service / Repository) y está desplegada en AWS EC2 con base de datos en RDS PostgreSQL. Además, utiliza Redis para cachear la información del dashboard y mejorar el rendimiento en consultas repetidas. El frontend está construido con Angular y Angular Material.
+
 
 ### Tecnologías
 - Java 21
 - Spring Boot 4
 - Spring Security + JWT
 - PostgreSQL (AWS RDS)
+- Redis
 - Hibernate / JPA
 - Maven
 - AWS EC2
@@ -24,6 +26,8 @@ API REST desarrollada con Spring Boot que permite a los usuarios registrar y ges
 - Validación del token por email + verificación de expiración en cada request
 - CRUD completo de transacciones
 - Dashboard con total de ingresos, egresos y balance del mes
+- Caché del dashboard con Redis para optimizar consultas frecuentes
+- TTL configurable para caché del dashboard
 - Cada usuario solo ve sus propias transacciones
 - Arquitectura en capas: Controller → Service → Repository
 - Manejo global de excepciones
@@ -34,6 +38,7 @@ API REST desarrollada con Spring Boot que permite a los usuarios registrar y ges
 - Java 21
 - Maven
 - PostgreSQL corriendo en localhost:5432
+- Redis corriendo en localhost:6379
 
 **Pasos:**
 ```bash
@@ -75,13 +80,14 @@ Ricardo Ramos Puga — [GitHub](https://github.com/Chiripi0rca)
 ## 🇺🇸 English
 
 ### Description
-REST API built with Spring Boot for managing personal finances (income and expenses). Features JWT authentication, layered architecture (Controller / Service / Repository), and is deployed on AWS EC2 with a PostgreSQL database on RDS. The frontend is built with Angular and Angular Material.
+REST API built with Spring Boot for managing personal finances (income and expenses). Features JWT authentication, layered architecture (Controller / Service / Repository), and is deployed on AWS EC2 with a PostgreSQL database on RDS. It also uses Redis to cache dashboard data and improve performance on repeated queries. The frontend is built with Angular and Angular Material.
 
 ### Tech Stack
 - Java 21
 - Spring Boot 4
 - Spring Security + JWT
 - PostgreSQL (AWS RDS)
+- Redis
 - Hibernate / JPA
 - Maven
 - AWS EC2
@@ -93,6 +99,8 @@ REST API built with Spring Boot for managing personal finances (income and expen
 - Token validation by email + expiration check on each request
 - Full CRUD for transactions
 - Monthly dashboard with income, expenses and balance summary
+- Redis-based dashboard caching for faster repeated queries
+- Configurable cache TTL for dashboard data
 - Each user only sees their own transactions
 - Layered architecture: Controller → Service → Repository
 - Global exception handling
@@ -103,6 +111,7 @@ REST API built with Spring Boot for managing personal finances (income and expen
 - Java 21
 - Maven
 - PostgreSQL running on localhost:5432
+- Redis running on localhost:6379
 
 **Steps:**
 ```bash
