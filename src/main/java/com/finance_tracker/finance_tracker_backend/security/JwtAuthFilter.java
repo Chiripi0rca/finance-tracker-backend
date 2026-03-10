@@ -6,6 +6,7 @@
 package com.finance_tracker.finance_tracker_backend.security;
 
 
+import com.finance_tracker.finance_tracker_backend.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

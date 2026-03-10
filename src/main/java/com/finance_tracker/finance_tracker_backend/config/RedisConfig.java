@@ -1,4 +1,4 @@
-package com.finance_tracker.finance_tracker_backend.config;
+/*package com.finance_tracker.finance_tracker_backend.config;
 
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
@@ -20,4 +20,4 @@ public class RedisConfig {
                 .cacheDefaults(config)
                 .build();
     }
-}
+}*/

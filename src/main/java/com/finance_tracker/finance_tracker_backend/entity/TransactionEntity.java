@@ -24,8 +24,8 @@ public class TransactionEntity {
     @Column (name = "monto")
     private BigDecimal monto;
 
-    @Column (name = "categoria")
-    private String categoria;
+    @Enumerated (EnumType.STRING)
+    private TipoCategoria categoria;
 
     @Column (name = "descripcion")
     private String descripcion;

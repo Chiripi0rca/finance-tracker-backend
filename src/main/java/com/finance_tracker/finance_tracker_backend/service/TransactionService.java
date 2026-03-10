@@ -1,9 +1,7 @@
 package com.finance_tracker.finance_tracker_backend.service;
 
-import com.finance_tracker.finance_tracker_backend.dto.CreateTransactionDTO;
-import com.finance_tracker.finance_tracker_backend.dto.DashboardDTO;
-import com.finance_tracker.finance_tracker_backend.dto.TransactionResponseDTO;
-import com.finance_tracker.finance_tracker_backend.dto.UpdateTransactionDTO;
+import com.finance_tracker.finance_tracker_backend.dto.*;
+import com.finance_tracker.finance_tracker_backend.entity.TipoCategoria;
 import com.finance_tracker.finance_tracker_backend.entity.TipoTransaccion;
 import com.finance_tracker.finance_tracker_backend.entity.TransactionEntity;
 import com.finance_tracker.finance_tracker_backend.entity.UserEntity;
@@ -14,11 +12,15 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
+
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -30,7 +32,8 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
 
-    @CacheEvict("dashboard")
+
+   // @CacheEvict("dashboard")
     public TransactionResponseDTO crear(CreateTransactionDTO createTransactionDTO){
         UserEntity user = userRepository.findByEmail(getUser())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -47,7 +50,7 @@ public class TransactionService {
         return convertirAResponseDto(transactionSave);
     }
 
-    @CacheEvict("dashboard")
+    //@CacheEvict("dashboard")
     public TransactionResponseDTO actualizar(UpdateTransactionDTO updateDTO, Long id){
 
         Optional<TransactionEntity> optional = transactionRepository.findById(id);
@@ -74,44 +77,57 @@ public class TransactionService {
         TransactionEntity update = transactionRepository.save(entity);
         return convertirAResponseDto(update);
     }
-    public List<TransactionResponseDTO> obtenerPorID(Long userId){
-        List<TransactionEntity> entities = transactionRepository.findByUserId(userId);
-        List<TransactionResponseDTO> responseDTOList = new ArrayList<>();
 
-        for (TransactionEntity entity : entities){
-            responseDTOList.add(convertirAResponseDto(entity));
-        }
-
-        return responseDTOList;
-    }
 
     public void delete(Long id){
         transactionRepository.deleteById(id);
     }
 
-    public List<TransactionResponseDTO> listarMovimientos(){
+    public PagesResponseDTO<TransactionResponseDTO> listarMovimientos(TipoCategoria categoria,
+                                                                      LocalDate mes,
+                                                                      int page,
+                                                                      int size){
         UserEntity user = userRepository.findByEmail(getUser())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        if (size >= 30) size = 30;
+        Pageable pageable = PageRequest.of(page, size);
+        Page<TransactionEntity> entities ;
+        LocalDateTime fin;
+        LocalDateTime inicio;
 
-        List<TransactionEntity> entities = transactionRepository.findByUser(user);
-        List<TransactionResponseDTO> responseDTOList = new ArrayList<>();
-
-        for (TransactionEntity entity : entities){
-            responseDTOList.add(convertirAResponseDto(entity));
+        if (categoria != null && mes != null) {
+            inicio = mes.atStartOfDay();
+            fin = inicio.plusMonths(1).minusSeconds(1);
+            entities = transactionRepository.findByUserAndCategoriaAndCreatedAtBetween(user, categoria, inicio, fin,pageable);
+        } else if (categoria != null) {
+            entities = transactionRepository.findByUserAndCategoria(user, categoria, pageable);
+        } else if (mes != null) {
+             inicio = mes.atStartOfDay();
+             fin = inicio.plusMonths(1).minusSeconds(1);
+             entities = transactionRepository.findByUserAndCreatedAtBetween(user, inicio, fin,pageable);
+        } else {
+             entities = transactionRepository.findByUser(user,pageable);
         }
-        return responseDTOList;
+
+        return new PagesResponseDTO<>(
+               entities.getContent().stream().map(this::convertirAResponseDto).toList(),
+               entities.getTotalPages(),
+               entities.getTotalElements(),
+               entities.getNumber(),
+                entities.getSize()
+        );
     }
 
-    @Cacheable(value = "dashboard", key = "#root.target.getUser()")
+    //@Cacheable(value = "dashboard", key = "#root.target.getUser()")
     public DashboardDTO getDashboard(){
         UserEntity user = userRepository.findByEmail(getUser())
                 .orElseThrow(()-> new RuntimeException("Usuario no encontrado"));
-        List<TransactionEntity> entities = transactionRepository.findByUser(user);
-
         LocalDateTime inicio = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0);
-        entities = entities.stream()
-                .filter(entity -> entity.getCreatedAt().isAfter(inicio))
-                .toList();
+        LocalDateTime fin = inicio.plusMonths(1).minusSeconds(1);
+        Page<TransactionEntity> page = transactionRepository.findByUserAndCreatedAtBetween(user,inicio, fin, Pageable.unpaged());
+
+
+        List<TransactionEntity> entities = page.getContent();
         BigDecimal totalEgresos = BigDecimal.ZERO;
         BigDecimal totalIngresos = BigDecimal.ZERO;
         BigDecimal calcularBalance;
@@ -138,6 +154,27 @@ public class TransactionService {
         responseDTO.setTipoTransaccion(entity.getTipoTransaccion());
         return responseDTO;
 
+    }
+
+    public String exportarCSV(){
+        UserEntity user = userRepository.findByEmail(getUser())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        Page<TransactionEntity> entities = transactionRepository.findByUser(user, Pageable.unpaged());
+
+        StringBuilder csv = new StringBuilder();
+
+        csv.append("id,monto,categoria,tipo,fecha,actualizacion\n");
+
+        for (TransactionEntity entity :entities.getContent()){
+            csv.append(entity.getId()).append(",")
+                            .append(entity.getMonto()).append(",")
+                            .append(entity.getCategoria()).append(",")
+                            .append(entity.getTipoTransaccion()).append(",")
+                            .append(entity.getCreatedAt()).append(",")
+                            .append(entity.getUpdatedAt()).append("\n");
+        }
+        return csv.toString();
     }
 
     public String getUser(){

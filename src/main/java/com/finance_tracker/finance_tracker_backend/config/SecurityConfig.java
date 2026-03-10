@@ -65,6 +65,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) //aqui desactiva la proteccion CSRF ya que con JWT no se necesita
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers(
+                                        "/swagger-ui/**",
+                                        "/swagger-ui/html",
+                                        "/v3/api-docs/**"
+                                ).permitAll()
                         .anyRequest().authenticated()//aqui definimo los endpoints publicos ejemplo los endponits que empience con api/auth/
                                                      // seran publicos como el registro y el login, todo lo demas necesitara autenticacion
                 )
@@ -80,7 +85,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        config.setAllowedOrigins(List.of("http://localhost:4200",
+                "http://finance-tracker-frontend-ricardo.s3-website.us-east-2.amazonaws.com"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

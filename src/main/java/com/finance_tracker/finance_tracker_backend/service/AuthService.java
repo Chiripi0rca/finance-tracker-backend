@@ -3,9 +3,9 @@ package com.finance_tracker.finance_tracker_backend.service;
 import com.finance_tracker.finance_tracker_backend.dto.AuthResponseDTO;
 import com.finance_tracker.finance_tracker_backend.dto.LoginRequestDTO;
 import com.finance_tracker.finance_tracker_backend.dto.RegisterRequestDTO;
+import com.finance_tracker.finance_tracker_backend.entity.RefreshTokenEntity;
 import com.finance_tracker.finance_tracker_backend.entity.UserEntity;
 import com.finance_tracker.finance_tracker_backend.repository.UserRepository;
-import com.finance_tracker.finance_tracker_backend.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,6 +22,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager manager;
+    private final RefreshTokenService refreshTokenService;
+
 
     //este metodo recibe como parametro un "RegisterRequestDTO"(email y password)
     // y devuelve un "AuthResponseDTO" (email y token)
@@ -44,9 +46,27 @@ public class AuthService {
                      loginRequestDTO.getEmail()
                      ,loginRequestDTO.getPassword())
                      );//aqui el usario ya esta registrado y si no lo esta nos lanzara un exception
+             UserEntity user = userRepository.findByEmail(loginRequestDTO.getEmail())
+                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
                  AuthResponseDTO responseDTO = new AuthResponseDTO();
                  responseDTO.setEmail(loginRequestDTO.getEmail());
                  responseDTO.setToken(jwtService.generateToken(loginRequestDTO.getEmail()));
+                 responseDTO.setRefreshToken(refreshTokenService.crearRefreshToken(user).getToken());
                  return responseDTO;
     }
+
+    public AuthResponseDTO refresh (String refreshToken){
+        RefreshTokenEntity token = refreshTokenService.validarRefreshToken(refreshToken);
+
+        UserEntity user = token.getUser();
+
+        AuthResponseDTO responseDTO = new AuthResponseDTO();
+        responseDTO.setEmail(user.getEmail());
+        responseDTO.setToken(jwtService.generateToken(user.getEmail()));
+        responseDTO.setRefreshToken(refreshToken);
+        return  responseDTO;
+    }
+
+
 }

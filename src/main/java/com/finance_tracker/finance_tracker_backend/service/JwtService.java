@@ -4,7 +4,7 @@
  */
 
 
-package com.finance_tracker.finance_tracker_backend.security;
+package com.finance_tracker.finance_tracker_backend.service;
 
 
 
@@ -20,10 +20,10 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret}")
+    @Value("${JWT_SECRET}")
     private String secretKey;
 
-    @Value("${jwt.expiration}")
+    @Value("${JWT_EXPIRATION}")
     private long expiration;
 
     private SecretKey getSignKey(){
