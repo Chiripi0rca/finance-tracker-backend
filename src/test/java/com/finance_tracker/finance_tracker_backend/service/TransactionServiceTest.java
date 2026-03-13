@@ -81,7 +81,7 @@ class TransactionServiceTest {
 
         // Act - llamar al metodo
         PagesResponseDTO<TransactionResponseDTO> result =
-                transactionService.listarMovimientos(null,null,0,10);
+                transactionService.listarMovimientos(null,null,null,0,10);
 
         //Assert - verificar el resultado
         assertNotNull(result);

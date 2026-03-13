@@ -23,7 +23,7 @@ public class CreateTransactionDTO {
     @Positive (message = "El monto debe de ser mayor a cero")
     private BigDecimal monto;
 
-    @NotBlank(message = "Introduzca la categoria de su movimiento")
+    @NotNull(message = "Introduzca la categoria de su movimiento")
     private TipoCategoria categoria;
 
     @Size(max=100, message = "la descripcion supera mas de 100 caracteres")

@@ -83,31 +83,28 @@ public class TransactionService {
         transactionRepository.deleteById(id);
     }
 
-    public PagesResponseDTO<TransactionResponseDTO> listarMovimientos(TipoCategoria categoria,
+    public PagesResponseDTO<TransactionResponseDTO> listarMovimientos(TipoTransaccion tipoTransaccion,
+                                                                      TipoCategoria categoria,
                                                                       LocalDate mes,
                                                                       int page,
                                                                       int size){
         UserEntity user = userRepository.findByEmail(getUser())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         if (size >= 30) size = 30;
-        Pageable pageable = PageRequest.of(page, size);
-        Page<TransactionEntity> entities ;
-        LocalDateTime fin;
-        LocalDateTime inicio;
 
-        if (categoria != null && mes != null) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        LocalDateTime fin = null;
+        LocalDateTime inicio = null;
+
+        if (mes != null) {
             inicio = mes.atStartOfDay();
             fin = inicio.plusMonths(1).minusSeconds(1);
-            entities = transactionRepository.findByUserAndCategoriaAndCreatedAtBetween(user, categoria, inicio, fin,pageable);
-        } else if (categoria != null) {
-            entities = transactionRepository.findByUserAndCategoria(user, categoria, pageable);
-        } else if (mes != null) {
-             inicio = mes.atStartOfDay();
-             fin = inicio.plusMonths(1).minusSeconds(1);
-             entities = transactionRepository.findByUserAndCreatedAtBetween(user, inicio, fin,pageable);
-        } else {
-             entities = transactionRepository.findByUser(user,pageable);
         }
+
+        Page<TransactionEntity> entities = obtenerMovimientosFiltrados(
+                user,tipoTransaccion,categoria,inicio,fin,pageable
+        );
 
         return new PagesResponseDTO<>(
                entities.getContent().stream().map(this::convertirAResponseDto).toList(),
@@ -117,6 +114,40 @@ public class TransactionService {
                 entities.getSize()
         );
     }
+
+     public Page<TransactionEntity> obtenerMovimientosFiltrados(
+             UserEntity user,
+             TipoTransaccion tipoTransaccion,
+             TipoCategoria categoria,
+             LocalDateTime inicio,
+             LocalDateTime fin,
+             Pageable pageable
+     ){
+         if (tipoTransaccion != null && categoria != null && inicio != null){
+             return transactionRepository.findByUserAndTipoTransaccionAndCategoriaAndCreatedAtBetween(user,
+                     tipoTransaccion,
+                     categoria,
+                     inicio,
+                     fin,
+                     pageable);
+         } else if (tipoTransaccion != null && categoria != null) {
+             return transactionRepository.findByUserAndTipoTransaccionAndCategoria(user, tipoTransaccion, categoria,pageable);
+
+         } else if (tipoTransaccion != null && inicio != null){
+             return transactionRepository.findByUserAndTipoTransaccionAndCreatedAtBetween(user, tipoTransaccion,inicio,fin,pageable);
+         }
+         else if (categoria != null && inicio != null) {
+             return transactionRepository.findByUserAndCategoriaAndCreatedAtBetween(user, categoria, inicio, fin,pageable);
+         } else if (categoria != null) {
+             return transactionRepository.findByUserAndCategoria(user, categoria, pageable);
+         } else if (inicio != null) {
+             return transactionRepository.findByUserAndCreatedAtBetween(user, inicio, fin,pageable);
+         } else if (tipoTransaccion != null) {
+             return transactionRepository.findByUserAndTipoTransaccion(user,tipoTransaccion,pageable);
+         } else {
+             return transactionRepository.findByUser(user,pageable);
+         }
+     }
 
     //@Cacheable(value = "dashboard", key = "#root.target.getUser()")
     public DashboardDTO getDashboard(){

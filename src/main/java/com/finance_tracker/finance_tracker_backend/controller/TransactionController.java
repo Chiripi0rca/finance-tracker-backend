@@ -2,6 +2,7 @@ package com.finance_tracker.finance_tracker_backend.controller;
 
 import com.finance_tracker.finance_tracker_backend.dto.*;
 import com.finance_tracker.finance_tracker_backend.entity.TipoCategoria;
+import com.finance_tracker.finance_tracker_backend.entity.TipoTransaccion;
 import com.finance_tracker.finance_tracker_backend.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,12 +28,13 @@ public class TransactionController {
        @Operation (summary = "Listar todas mis movimientos")
        @GetMapping
        public PagesResponseDTO<TransactionResponseDTO> listarMovimientos(
+               @RequestParam(required = false) TipoTransaccion tipoTransaccion,
                @RequestParam(required = false)TipoCategoria categoria,
-               @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-DD") LocalDate mes,
+               @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate mes,
                @RequestParam(defaultValue = "0") int page,
                @RequestParam(defaultValue = "10") int size
                ){
-           return transactionService.listarMovimientos(categoria,mes,page,size);
+           return transactionService.listarMovimientos(tipoTransaccion,categoria,mes,page,size);
        }
 
        @Operation (summary = "Ver el resumen del mes")

@@ -20,10 +20,10 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    @Value("${JWT_SECRET}")
+    @Value("${jwt.secret}")
     private String secretKey;
 
-    @Value("${JWT_EXPIRATION}")
+    @Value("${jwt.expiration}")
     private long expiration;
 
     private SecretKey getSignKey(){

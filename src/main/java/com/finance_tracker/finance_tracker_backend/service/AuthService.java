@@ -28,6 +28,11 @@ public class AuthService {
     //este metodo recibe como parametro un "RegisterRequestDTO"(email y password)
     // y devuelve un "AuthResponseDTO" (email y token)
     public AuthResponseDTO register(RegisterRequestDTO requestDTO) {
+         if (userRepository.findByEmail(requestDTO.getEmail()).isPresent()){
+             throw new RuntimeException("Este correo ya existe");
+         }
+
+
         UserEntity entity = new UserEntity(); //aqui creamos un UserEntity para guardar los datos del usuario
         entity.setPassword(passwordEncoder.encode(requestDTO.getPassword()));//aqui encriptamos la password con
         entity.setEmail(requestDTO.getEmail());
